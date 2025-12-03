@@ -1,0 +1,5 @@
+.DS_Store
+__pycache__/ai.cpython-313.pyc
+__pycache__/board.cpython-313.pyc
+__pycache__/constants.cpython-313.pyc
+__pycache__/game.cpython-313.pyc
