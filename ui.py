@@ -72,7 +72,7 @@ def run_ui():
 
     # build window
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Connect 4 - UI Test")
+    pygame.display.set_caption("Connect 4 Game")
 
     # font for status text
     font = pygame.font.SysFont("arial", 48, bold=True)
