@@ -1,3 +1,4 @@
+import time
 import pygame
 from constants import ROWS, COLS, EMPTY, PLAYER, AI, EASY_DEPTH, MEDIUM_DEPTH, HARD_DEPTH
 from board import (
@@ -14,8 +15,8 @@ from ai import get_ai_move
 SQUARESIZE = 80
 RADIUS = SQUARESIZE // 2 - 5
 
-# size for the top UI area (buttons, status, hover)
-HEADER_HEIGHT = 140  # taller header so nothing overlaps
+# size for the top UI area
+HEADER_HEIGHT = 140
 
 # game window size
 WIDTH = COLS * SQUARESIZE
@@ -87,10 +88,18 @@ def run_ui():
     current_depth = MEDIUM_DEPTH
     difficulty_name = "Medium"
 
-    # AI thinking delay
-    AI_DELAY_MS = 800  # pause
+    # AI thinking delay (UI pause)
+    AI_DELAY_MS = 800
     ai_thinking = False
     ai_think_start = 0
+
+    # move/compute times for each AI difficulty level
+    move_times = {
+        "Easy": [],
+        "Medium": [],
+        "Hard": [],
+    }
+    stats_printed = False  # print AI stats when game is over
 
     # window
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -100,7 +109,7 @@ def run_ui():
     font = pygame.font.SysFont("arial", 36, bold=True)   # winner text
     small_font = pygame.font.SysFont("arial", 24)        # buttons/labels
 
-    # difficulty button size
+    # difficulty button size/pos
     button_width = 110
     button_height = 36
     button_y = 20
@@ -109,7 +118,7 @@ def run_ui():
     medium_rect = pygame.Rect(20 + button_width, button_y, button_width, button_height)
     hard_rect = pygame.Rect(30 + 2 * button_width, button_y, button_width, button_height)
 
-    # hover chip
+    # hover area
     HOVER_Y = HEADER_HEIGHT - RADIUS - 10
 
     running = True
@@ -128,11 +137,12 @@ def run_ui():
 
     # main loop
     while running:
+        # ----- EVENT HANDLING -----
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-            # keyboard difficulty shortcuts
+            # keyboard shortcuts for difficulty level
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
                     current_depth = EASY_DEPTH
@@ -147,7 +157,7 @@ def run_ui():
                     difficulty_name = "Hard"
                     print("Difficulty is set to hard (depth=", current_depth, ")")
 
-            # hover column only for player's turn
+            # hover column for players turn
             if event.type == pygame.MOUSEMOTION:
                 if not game_over and turn == PLAYER:
                     mouse_x = event.pos[0]
@@ -163,7 +173,7 @@ def run_ui():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_x, mouse_y = event.pos
 
-                # 1) check difficulty buttons in console
+                # 1) check difficulty buttons
                 if easy_rect.collidepoint(mouse_x, mouse_y):
                     current_depth = EASY_DEPTH
                     difficulty_name = "Easy"
@@ -180,7 +190,7 @@ def run_ui():
                     print("Difficulty is set to hard (depth=", current_depth, ")")
                     continue
 
-                # 2) otherwise: treat board as click
+                # 2) or treat as board click
                 if not game_over:
                     col = mouse_x // SQUARESIZE
 
@@ -204,7 +214,7 @@ def run_ui():
                                     ai_thinking = True
                                     ai_think_start = pygame.time.get_ticks()
 
-        # ---- AI MOVE ------
+        # ----- AI MOVE -----
         if not game_over and turn == AI:
             if ai_thinking:
                 now = pygame.time.get_ticks()
@@ -213,7 +223,15 @@ def run_ui():
 
                     valid_locations = get_valid_locations(board)
                     if len(valid_locations) > 0:
+                        # measure compute time of minimax
+                        start = time.perf_counter()
                         col = get_ai_move(board, current_depth)
+                        end = time.perf_counter()
+                        elapsed = end - start
+
+                        if difficulty_name in move_times:
+                            move_times[difficulty_name].append(elapsed)
+                        print(f"[{difficulty_name}] AI move took {elapsed:.4f} seconds")
 
                         if col is not None and is_valid_location(board, col):
                             row = get_next_open_row(board, col)
@@ -231,10 +249,18 @@ def run_ui():
                                 else:
                                     turn = PLAYER
             else:
-                # safety net if for some reason ai_thinking is False but it's AI's turn
+                # safety net if somehow ai_thinking is False but it's AI's turn
                 valid_locations = get_valid_locations(board)
                 if len(valid_locations) > 0:
+                    start = time.perf_counter()
                     col = get_ai_move(board, current_depth)
+                    end = time.perf_counter()
+                    elapsed = end - start
+
+                    if difficulty_name in move_times:
+                        move_times[difficulty_name].append(elapsed)
+                    print(f"[{difficulty_name}] AI move took {elapsed:.4f} seconds")
+
                     if col is not None and is_valid_location(board, col):
                         row = get_next_open_row(board, col)
                         drop_piece(board, row, col, AI)
@@ -247,9 +273,7 @@ def run_ui():
                         else:
                             turn = PLAYER
 
-# ------- visual builds ------
-
-        # board
+        # building
         screen.fill(BG_COLOR)
 
         # hover piece
@@ -272,12 +296,21 @@ def run_ui():
         draw_button(medium_rect, "Medium", difficulty_name.lower() == "medium")
         draw_button(hard_rect, "Hard", difficulty_name.lower() == "hard")
 
-        # winner or draw message
+        # winner/draw message
         if status_text:
-            status_y = HEADER_HEIGHT // 1.5
+            status_y = HEADER_HEIGHT // 2
             text_surface = font.render(status_text, True, WINNER_TEXT_COLOR)
             text_rect = text_surface.get_rect(center=(WIDTH // 2, status_y))
             screen.blit(text_surface, text_rect)
+
+        # print summary of AI stats when game ends
+        if game_over and not stats_printed:
+            print("\n=== AI Move/Computation Stats ===")
+            for diff, times in move_times.items():
+                if times:
+                    avg = sum(times) / len(times)
+                    print(f"{diff}: {len(times)} moves, average {avg:.4f} seconds per move")
+            stats_printed = True
 
         pygame.display.flip()
         clock.tick(60)
