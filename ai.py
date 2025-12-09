@@ -132,6 +132,6 @@ def get_ai_move(board, depth=None):
     if depth is None:
         depth = DEPTH
 
-    col, _ = minimax(board, DEPTH, -math.inf, math.inf, True)
+    col, _ = minimax(board, depth, -math.inf, math.inf, True)
     return col
 

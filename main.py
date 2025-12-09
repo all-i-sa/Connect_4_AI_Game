@@ -1,4 +1,4 @@
-from ui import run_ui
+from main_menu import main_menu
 
 if __name__ == "__main__":
-    run_ui()
+    main_menu()
