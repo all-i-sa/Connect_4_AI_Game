@@ -1,5 +1,5 @@
 # Connect 4 AI Game
-
+---
 This is a Connect 4 game that uses AI for the computer gameplay.  
 It uses minimax with alpha–beta pruning and a Pygame UI.  
 The player can choose between three difficulty levels: easy, medium, and hard.  
@@ -34,7 +34,7 @@ The game runs locally.
 
 2. **Heuristic Evaluation**  
    The AI scores the board using windows of 4 cells (horizontal, vertical, diagonal).  
-   Rough idea of the scoring:
+   scoring:
 
    ```python
    if piece_count == 4:
