@@ -125,8 +125,13 @@ def minimax(board, depth, alpha, beta, maximizing_player):
         return best_col, value
 
 
-def get_ai_move(board):
-    """Get the AI's move using minimax."""
+def get_ai_move(board, depth=None):
+    """Get the AI's move using minimax.
+    If depth is None, use the global DEPTH from constants (which is medium level)
+    """
+    if depth is None:
+        depth = DEPTH
+
     col, _ = minimax(board, DEPTH, -math.inf, math.inf, True)
     return col
 
