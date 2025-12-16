@@ -46,7 +46,34 @@ The game runs locally.
 
    if opponent_count == 3 and empty_count == 1:
        score -= 4
+---
+The AI rewards:  
+- 4 in a row (high score)
+- 3 in a row with an empty slot
+- 2 in a row with two empties
+The AI penalizes:
+- situations where the opponent has 3 in a row and one empty
+---
+Center Preference for AI moves:
+- counts how many AI pieces are in the center column and each center piece adds extra points to the score.
+- AI prefers playing toward the middle of the board, since it is usually better because it allows more  
+opportunities to get 4 in a row.
+---
+Minimax + Alpha–Beta Pruning:
+-The AI assumes tries to maximize the score, and the human tries to minimize it.
+- At each node, it simulates placing a piece, goes deeper until it hits a win/loss/draw state, or  
+the depth limit.
+- When the depth limit is reached, it uses score_position to evaluate the board.
 
+Alpha–beta pruning is used to:
+- Keep track of the best scores seen so far AND cut off branches that cannot improve the final decision.
+---
+Difficulty Levels (Search Depth):
+- Easy: depth 1
+- Medium: depth 3
+- Hard: depth 5
+
+The higher the depth means AI can see more moves into the future.
 
 ## How to Run
 
@@ -64,10 +91,12 @@ hover shows where your piece will drop)
 - Buttons: click Easy, Medium, or Hard at the top to change difficulty
 - Keyboard: Key in 1 for easy, 2 for medium, 3 for hard
 
-## Testing & Results
-
-to fill in later
+## Gameplay Summary from intial tests
+- Increasing search depth made the AI much harder to beat.
+- Response time stayed low and consistent for all three levels: Easy/Medium/Hard.
+- The AI did favor the center, block most 3-in-a-row threats, and won more often than  
+the human, especially on higher difficulty levels.
 
 ## Team
 
-to fill in later
+Bryan Alarcon, Allisa Warren, Minh Duc Ngo
